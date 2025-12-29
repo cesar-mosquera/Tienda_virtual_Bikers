@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard Administrativo
+            </h2>
+            <p class="text-muted mb-0">Métricas y gestión de la tienda</p>
+        </div>
+    </div>
+
+    <!-- Metrics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1">Total Pedidos</p>
+                        <p class="value mb-0">{{ total_pedidos }}</p>
+                    </div>
+                    <div class="icon"
+                        style="background: linear-gradient(135deg, var(--primary-600), var(--primary-500));">
+                        <i class="bi bi-bag text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1">Pedidos Entregados</p>
+                        <p class="value mb-0">{{ pedidos_entregados }}</p>
+                    </div>
+                    <div class="icon" style="background: linear-gradient(135deg, var(--success), #059669);">
+                        <i class="bi bi-check-circle text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1">Margen Promedio</p>
+                        <p class="value mb-0">{{ margen_promedio|floatformat:1 }}%</p>
+                    </div>
+                    <div class="icon"
+                        style="background: linear-gradient(135deg, var(--accent-500), var(--accent-400));">
+                        <i class="bi bi-graph-up text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1">PQRS Abiertos</p>
+                        <p class="value mb-0">{{ pqrs_abiertos }}</p>
+                    </div>
+                    <div class="icon" style="background: linear-gradient(135deg, var(--warning), #d97706);">
+                        <i class="bi bi-envelope-exclamation text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1">Promociones Activas</p>
+                        <p class="value mb-0">{{ promociones_activas }}</p>
+                    </div>
+                    <div class="icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <i class="bi bi-tag text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1">Productos Bajo Stock</p>
+                        <p class="value mb-0 {% if bajo_stock > 0 %}text-danger{% endif %}">{{ bajo_stock }}</p>
+                    </div>
+                    <div class="icon" style="background: linear-gradient(135deg, var(--danger), #dc2626);">
+                        <i class="bi bi-exclamation-triangle text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="dashboard-card h-100">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-envelope me-2"></i>Buzón PQRS
+                </h5>
+                <p class="text-muted">Gestiona peticiones, quejas, reclamos y sugerencias de los clientes.</p>
+                <a href="{% url 'administracion:lista_pqrs' %}" class="btn btn-outline-primary">
+                    Ver PQRS <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-card h-100">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-tag me-2"></i>Promociones
+                </h5>
+                <p class="text-muted">Crea y gestiona promociones por fechas especiales.</p>
+                <a href="{% url 'administracion:lista_promociones' %}" class="btn btn-outline-primary">
+                    Ver Promociones <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

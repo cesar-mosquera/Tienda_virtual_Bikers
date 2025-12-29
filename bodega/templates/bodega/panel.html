@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Bodega - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-box-seam me-2"></i>Panel de Bodega
+            </h2>
+            <p class="text-muted mb-0">Gestión de inventario y despachos</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <a href="{% url 'bodega:ingreso_stock' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center h-100">
+                    <div class="icon mx-auto mb-3"
+                        style="background: linear-gradient(135deg, var(--success), #059669);">
+                        <i class="bi bi-plus-circle text-white"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Ingreso de Stock</h5>
+                    <p class="text-muted mb-0">Registrar nuevas unidades</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'bodega:registrar_dano' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center h-100">
+                    <div class="icon mx-auto mb-3" style="background: linear-gradient(135deg, var(--danger), #dc2626);">
+                        <i class="bi bi-exclamation-triangle text-white"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Reportar Daño</h5>
+                    <p class="text-muted mb-0">Registrar producto dañado</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'bodega:productos_danados' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center h-100">
+                    <div class="icon mx-auto mb-3"
+                        style="background: linear-gradient(135deg, var(--warning), #d97706);">
+                        <i class="bi bi-clipboard-x text-white"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Prod. Dañados</h5>
+                    <p class="text-muted mb-0">{{ danos_pendientes.count }} pendientes</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Pending Orders for Dispatch -->
+    <div class="dashboard-card mb-4">
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-truck me-2"></i>Pedidos Pendientes de Despacho
+        </h5>
+
+        {% if pedidos_pendientes %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th># Pedido</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Dirección</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pedido in pedidos_pendientes %}
+                    <tr>
+                        <td><strong>#{{ pedido.pk }}</strong></td>
+                        <td>{{ pedido.cliente.username }}</td>
+                        <td>{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+                        <td>{{ pedido.direccion_envio|truncatechars:40 }}</td>
+                        <td>
+                            <a href="{% url 'bodega:confirmar_despacho' pedido.pk %}" class="btn btn-sm btn-success">
+                                <i class="bi bi-check-lg me-1"></i>Despachar
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No hay pedidos pendientes de despacho.</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Stock Entries -->
+    <div class="dashboard-card">
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-clock-history me-2"></i>Ingresos de Stock Recientes
+        </h5>
+
+        {% if ingresos_recientes %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Fecha</th>
+                        <th>Confirmado por</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ingreso in ingresos_recientes %}
+                    <tr>
+                        <td>{{ ingreso.bicicleta.marca }} {{ ingreso.bicicleta.modelo }}</td>
+                        <td><span class="badge bg-success">+{{ ingreso.cantidad }}</span></td>
+                        <td>{{ ingreso.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>{{ ingreso.confirmado_por.username }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No hay ingresos registrados.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

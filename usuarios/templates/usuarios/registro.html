@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro - Aura Bikers{% endblock %}
+
+{% block main_class %}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card" style="max-width: 550px;">
+        <div class="logo">
+            <i class="bi bi-bicycle me-2"></i>Aura Bikers
+        </div>
+        <h4 class="text-center mb-4">Crear Cuenta</h4>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Nombre de Usuario *</label>
+                    <input type="text" name="username" class="form-control" value="{{ form.username.value|default:'' }}"
+                        required>
+                    {% if form.username.errors %}
+                    <small class="text-danger">{{ form.username.errors.0 }}</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Email *</label>
+                    <input type="email" name="email" class="form-control" value="{{ form.email.value|default:'' }}"
+                        required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="first_name" class="form-control"
+                        value="{{ form.first_name.value|default:'' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" name="last_name" class="form-control"
+                        value="{{ form.last_name.value|default:'' }}">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Cédula *</label>
+                    <input type="text" name="cedula" class="form-control" value="{{ form.cedula.value|default:'' }}"
+                        required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Celular *</label>
+                    <input type="tel" name="celular" class="form-control" value="{{ form.celular.value|default:'' }}"
+                        required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Dirección *</label>
+                <textarea name="direccion" class="form-control" rows="2"
+                    required>{{ form.direccion.value|default:'' }}</textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Contraseña *</label>
+                    <input type="password" name="password1" class="form-control" required>
+                    {% if form.password1.errors %}
+                    <small class="text-danger">{{ form.password1.errors.0 }}</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Confirmar Contraseña *</label>
+                    <input type="password" name="password2" class="form-control" required>
+                    {% if form.password2.errors %}
+                    <small class="text-danger">{{ form.password2.errors.0 }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-accent w-100 mb-3">
+                <i class="bi bi-person-plus me-2"></i>Crear Cuenta
+            </button>
+
+            <p class="text-center text-muted mb-0">
+                ¿Ya tienes cuenta? <a href="{% url 'login' %}" class="text-decoration-none">Inicia sesión aquí</a>
+            </p>
+        </form>
+    </div>
+</div>
+{% endblock %}

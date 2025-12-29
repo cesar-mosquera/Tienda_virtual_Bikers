@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}PQRS #{{ pqrs.pk }} - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'administracion:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'administracion:lista_pqrs' %}">PQRS</a></li>
+            <li class="breadcrumb-item active">Caso #{{ pqrs.pk }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <span class="badge bg-secondary mb-2">{{ pqrs.get_tipo_display }}</span>
+                        <h3 class="fw-bold mb-1">{{ pqrs.asunto }}</h3>
+                        <small class="text-muted">Por {{ pqrs.cliente.username }} - {{ pqrs.fecha_creacion|date:"d/m/Y
+                            H:i" }}</small>
+                    </div>
+                    {% if pqrs.estado == 'abierto' %}
+                    <span class="badge bg-danger fs-6">Abierto</span>
+                    {% elif pqrs.estado == 'en_proceso' %}
+                    <span class="badge bg-warning text-dark fs-6">En Proceso</span>
+                    {% else %}
+                    <span class="badge bg-success fs-6">Resuelto</span>
+                    {% endif %}
+                </div>
+
+                <h6 class="fw-bold">Descripción:</h6>
+                <p class="mb-4">{{ pqrs.descripcion }}</p>
+
+                {% if pqrs.respuesta %}
+                <div class="p-3 bg-light rounded">
+                    <h6 class="fw-bold"><i class="bi bi-reply me-2"></i>Respuesta:</h6>
+                    <p class="mb-1">{{ pqrs.respuesta }}</p>
+                    {% if pqrs.resuelto_por %}
+                    <small class="text-muted">Por {{ pqrs.resuelto_por.username }} - {{
+                        pqrs.fecha_resolucion|date:"d/m/Y H:i" }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <h5 class="fw-bold mb-3">Responder / Actualizar</h5>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select" required>
+                            <option value="abierto" {% if pqrs.estado=='abierto' %}selected{% endif %}>Abierto</option>
+                            <option value="en_proceso" {% if pqrs.estado=='en_proceso' %}selected{% endif %}>En Proceso
+                            </option>
+                            <option value="resuelto" {% if pqrs.estado=='resuelto' %}selected{% endif %}>Resuelto
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Respuesta</label>
+                        <textarea name="respuesta" class="form-control" rows="4"
+                            required>{{ pqrs.respuesta }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-accent w-100">
+                        <i class="bi bi-send me-1"></i>Guardar Respuesta
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

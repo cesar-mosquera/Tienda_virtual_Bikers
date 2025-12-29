@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Promociones - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-tag me-2"></i>Promociones
+            </h2>
+            <p class="text-muted mb-0">Gestión de promociones por fechas especiales</p>
+        </div>
+        <a href="{% url 'administracion:crear_promocion' %}" class="btn btn-accent">
+            <i class="bi bi-plus-lg me-1"></i>Nueva Promoción
+        </a>
+    </div>
+
+    {% if promociones %}
+    <div class="row g-4">
+        {% for promo in promociones %}
+        <div class="col-md-6 col-lg-4">
+            <div class="dashboard-card h-100">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="fw-bold mb-0">{{ promo.nombre }}</h5>
+                    {% if promo.esta_vigente %}
+                    <span class="badge bg-success">Vigente</span>
+                    {% elif promo.activa %}
+                    <span class="badge bg-warning text-dark">Programada</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Inactiva</span>
+                    {% endif %}
+                </div>
+
+                <p class="text-muted small mb-3">{{ promo.descripcion|truncatechars:100 }}</p>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Descuento:</span>
+                    <span class="badge bg-danger fs-6">{{ promo.descuento }}%</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Vigencia:</span>
+                    <span class="small">{{ promo.fecha_inicio|date:"d/m/Y" }} - {{ promo.fecha_fin|date:"d/m/Y"
+                        }}</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Aplica a:</span>
+                    <span class="small">
+                        {% if promo.aplica_a_todas %}
+                        Todo el catálogo
+                        {% else %}
+                        {{ promo.bicicletas.count }} productos
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="dashboard-card text-center py-5">
+        <i class="bi bi-tag display-1 text-muted mb-3"></i>
+        <h5>Sin promociones</h5>
+        <p class="text-muted">Crea tu primera promoción para atraer más clientes</p>
+        <a href="{% url 'administracion:crear_promocion' %}" class="btn btn-accent">
+            <i class="bi bi-plus-lg me-1"></i>Crear Promoción
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

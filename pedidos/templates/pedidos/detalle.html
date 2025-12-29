@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Pedido #{{ pedido.pk }} - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'pedidos:lista' %}">Pedidos</a></li>
+            <li class="breadcrumb-item active">Pedido #{{ pedido.pk }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Order Info -->
+        <div class="col-lg-8">
+            <div class="dashboard-card mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <h3 class="fw-bold mb-1">Pedido #{{ pedido.pk }}</h3>
+                        <p class="text-muted mb-0">{{ pedido.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <span class="badge badge-{{ pedido.estado }} fs-6">{{ pedido.get_estado_display }}</span>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded">
+                            <small class="text-muted d-block">Cliente</small>
+                            <strong>{{ pedido.cliente.get_full_name|default:pedido.cliente.username }}</strong>
+                            <br><small class="text-muted">{{ pedido.cliente.cedula }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded">
+                            <small class="text-muted d-block">Vendedor Asignado</small>
+                            <strong>{{ pedido.vendedor.username|default:"Sin asignar" }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-light rounded mb-4">
+                    <small class="text-muted d-block">Dirección de Envío</small>
+                    <strong>{{ pedido.direccion_envio }}</strong>
+                </div>
+
+                <!-- Products -->
+                <h5 class="fw-bold mb-3">Productos</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Precio</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in pedido.detalles.all %}
+                            <tr>
+                                <td>{{ detalle.bicicleta.marca }} {{ detalle.bicicleta.modelo }}</td>
+                                <td class="text-center">{{ detalle.cantidad }}</td>
+                                <td class="text-end">${{ detalle.precio_unitario|floatformat:2 }}</td>
+                                <td class="text-end"><strong>${{ detalle.subtotal|floatformat:2 }}</strong></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Sin productos</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">Total:</td>
+                                <td class="text-end fw-bold fs-5">${{ pedido.total|floatformat:2 }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Status History (Audit) -->
+            <div class="dashboard-card">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-clock-history me-2"></i>Historial de Estados
+                </h5>
+
+                {% if historial %}
+                <div class="timeline">
+                    {% for registro in historial %}
+                    <div class="d-flex mb-3">
+                        <div class="me-3">
+                            <span class="badge bg-primary rounded-circle p-2">
+                                <i class="bi bi-arrow-right"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <div class="fw-bold">
+                                {{ registro.get_estado_anterior_display }} → {{ registro.get_estado_nuevo_display }}
+                            </div>
+                            <small class="text-muted">
+                                Por {{ registro.cambiado_por.username }} - {{ registro.fecha|date:"d/m/Y H:i" }}
+                            </small>
+                            {% if registro.notas %}
+                            <p class="mb-0 small text-muted mt-1">{{ registro.notas }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No hay cambios de estado registrados.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Actions Sidebar -->
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <h5 class="fw-bold mb-3">Acciones</h5>
+
+                {% if user.es_bodeguero and pedido.estado == 'pendiente' %}
+                <a href="{% url 'bodega:confirmar_despacho' pedido.pk %}" class="btn btn-success w-100 mb-2">
+                    <i class="bi bi-box-seam me-2"></i>Confirmar Despacho
+                </a>
+                {% endif %}
+
+                {% if user.es_vendedor or user.es_admin %}
+                {% if pedido.estado == 'despachado' %}
+                <form method="post" action="{% url 'pedidos:cambiar_estado' pedido.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="estado" value="en_camino">
+                    <button type="submit" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-truck me-2"></i>Marcar En Camino
+                    </button>
+                </form>
+                {% elif pedido.estado == 'en_camino' %}
+                <form method="post" action="{% url 'pedidos:cambiar_estado' pedido.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="estado" value="entregado">
+                    <button type="submit" class="btn btn-success w-100 mb-2">
+                        <i class="bi bi-check-circle me-2"></i>Marcar Entregado
+                    </button>
+                </form>
+                {% endif %}
+                {% endif %}
+
+                <a href="{% url 'pedidos:lista' %}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-left me-2"></i>Volver a Pedidos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

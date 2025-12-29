@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Despacho - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="dashboard-card">
+                <h4 class="fw-bold mb-4">
+                    <i class="bi bi-truck me-2"></i>Confirmar Despacho
+                </h4>
+
+                <div class="alert alert-info">
+                    <strong>Pedido #{{ pedido.pk }}</strong><br>
+                    Cliente: {{ pedido.cliente.get_full_name|default:pedido.cliente.username }}<br>
+                    Dirección: {{ pedido.direccion_envio }}
+                </div>
+
+                <h6 class="fw-bold mb-2">Productos:</h6>
+                <ul class="list-group mb-4">
+                    {% for detalle in pedido.detalles.all %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>{{ detalle.bicicleta.marca }} {{ detalle.bicicleta.modelo }}</span>
+                        <span class="badge bg-primary">x{{ detalle.cantidad }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted">Sin productos</li>
+                    {% endfor %}
+                </ul>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="form-label">Notas de Despacho</label>
+                        <textarea name="notas" class="form-control" rows="3"
+                            placeholder="Observaciones del despacho..."></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i>Confirmar Despacho
+                        </button>
+                        <a href="{% url 'bodega:panel' %}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

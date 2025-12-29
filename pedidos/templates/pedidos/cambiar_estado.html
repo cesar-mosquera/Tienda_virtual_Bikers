@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Cambiar Estado - Pedido #{{ pedido.pk }} - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="dashboard-card">
+                <h4 class="fw-bold mb-4">Cambiar Estado del Pedido #{{ pedido.pk }}</h4>
+
+                <p class="mb-4">
+                    Estado actual: <span class="badge badge-{{ pedido.estado }}">{{ pedido.get_estado_display }}</span>
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label">Nuevo Estado</label>
+                        <select name="estado" class="form-select" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="despachado">Despachado</option>
+                            <option value="en_camino">En Camino</option>
+                            <option value="entregado">Entregado</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-accent">
+                            <i class="bi bi-check-lg me-1"></i>Guardar Cambio
+                        </button>
+                        <a href="{% url 'pedidos:detalle' pedido.pk %}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

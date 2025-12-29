@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Productos Dañados - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>Productos Dañados
+            </h2>
+            <p class="text-muted mb-0">Registro de productos con daños reportados</p>
+        </div>
+        <a href="{% url 'bodega:registrar_dano' %}" class="btn btn-danger">
+            <i class="bi bi-plus-lg me-1"></i>Nuevo Reporte
+        </a>
+    </div>
+
+    {% if danos %}
+    <div class="table-responsive">
+        <table class="table table-premium">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Tipo de Daño</th>
+                    <th>Cantidad</th>
+                    <th>Fecha</th>
+                    <th>Reportado por</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dano in danos %}
+                <tr>
+                    <td>{{ dano.bicicleta.marca }} {{ dano.bicicleta.modelo }}</td>
+                    <td>{{ dano.get_motivo_tipo_display }}</td>
+                    <td>{{ dano.cantidad_afectada }}</td>
+                    <td>{{ dano.fecha|date:"d/m/Y" }}</td>
+                    <td>{{ dano.reportado_por.username }}</td>
+                    <td>
+                        {% if dano.resuelto %}
+                        <span class="badge bg-success">Resuelto</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="dashboard-card text-center py-5">
+        <i class="bi bi-check-circle display-1 text-success mb-3"></i>
+        <h5>Sin productos dañados</h5>
+        <p class="text-muted">No hay reportes de daños registrados</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

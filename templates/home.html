@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Aura Bikers - La Esencia del Ciclismo de Élite{% endblock %}
+
+{% block main_class %}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="hero-title animate-fadeInUp">
+                    La Esencia del<br>Ciclismo de Élite
+                </h1>
+                <p class="hero-subtitle mt-4 animate-fadeInUp delay-100">
+                    Descubre nuestra colección exclusiva de bicicletas premium.
+                    Desde las mejores marcas del mundo hasta el servicio personalizado que mereces.
+                </p>
+                <div class="mt-5 animate-fadeInUp delay-200">
+                    <a href="{% url 'productos:catalogo' %}" class="btn btn-accent btn-lg me-3">
+                        <i class="bi bi-bicycle me-2"></i>Ver Catálogo
+                    </a>
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'registro' %}" class="btn btn-outline-accent btn-lg">
+                        Registrarse
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="text-center animate-fadeInUp delay-300">
+                    <i class="bi bi-bicycle display-1 text-white opacity-25" style="font-size: 15rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="dashboard-card text-center h-100">
+                    <div class="icon mx-auto mb-3"
+                        style="background: linear-gradient(135deg, var(--accent-500), var(--accent-400));">
+                        <i class="bi bi-trophy text-white"></i>
+                    </div>
+                    <h5 class="fw-bold">Alta Gama</h5>
+                    <p class="text-muted mb-0">Bicicletas de las mejores marcas del mundo para ciclistas exigentes.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dashboard-card text-center h-100">
+                    <div class="icon mx-auto mb-3"
+                        style="background: linear-gradient(135deg, var(--primary-600), var(--primary-500));">
+                        <i class="bi bi-truck text-white"></i>
+                    </div>
+                    <h5 class="fw-bold">Envío Seguro</h5>
+                    <p class="text-muted mb-0">Seguimiento en tiempo real y entrega garantizada a toda Colombia.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dashboard-card text-center h-100">
+                    <div class="icon mx-auto mb-3"
+                        style="background: linear-gradient(135deg, var(--success), #059669);">
+                        <i class="bi bi-shield-check text-white"></i>
+                    </div>
+                    <h5 class="fw-bold">Garantía Premium</h5>
+                    <p class="text-muted mb-0">Respaldo total en todas nuestras bicicletas con servicio técnico
+                        especializado.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-dark text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">¿Listo para encontrar tu bicicleta perfecta?</h2>
+        <p class="text-muted mb-4">Explora nuestro catálogo de bicicletas de ruta y MTB de alta y media gama.</p>
+        <a href="{% url 'productos:catalogo' %}" class="btn btn-accent btn-lg">
+            <i class="bi bi-arrow-right me-2"></i>Explorar Catálogo
+        </a>
+    </div>
+</section>
+{% endblock %}

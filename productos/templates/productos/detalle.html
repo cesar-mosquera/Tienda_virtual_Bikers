@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ bicicleta.marca }} {{ bicicleta.modelo }} - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'productos:catalogo' %}">Catálogo</a></li>
+            <li class="breadcrumb-item active">{{ bicicleta.modelo }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+        <!-- Image -->
+        <div class="col-lg-6">
+            <div class="dashboard-card p-0 overflow-hidden">
+                {% if bicicleta.imagen %}
+                <img src="{{ bicicleta.imagen.url }}" class="w-100" alt="{{ bicicleta.modelo }}"
+                    style="object-fit: cover; max-height: 500px;">
+                {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <i class="bi bi-bicycle display-1 text-muted"></i>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div class="col-lg-6">
+            <div class="d-flex gap-2 mb-3">
+                <span class="badge badge-gama-{{ bicicleta.gama }}">{{ bicicleta.get_gama_display }}</span>
+                <span class="badge badge-{{ bicicleta.tipo }}">{{ bicicleta.get_tipo_display }}</span>
+            </div>
+
+            <h1 class="fw-bold">{{ bicicleta.marca }}</h1>
+            <h2 class="text-muted">{{ bicicleta.modelo }}</h2>
+
+            <hr>
+
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <div class="dashboard-card text-center py-3">
+                        <small class="text-muted d-block">Medida Marco</small>
+                        <strong>{{ bicicleta.get_medida_marco_display }}</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="dashboard-card text-center py-3">
+                        <small class="text-muted d-block">Stock</small>
+                        <strong>{{ bicicleta.stock }} unidades</strong>
+                    </div>
+                </div>
+            </div>
+
+            {% if bicicleta.descripcion %}
+            <div class="mb-4">
+                <h5 class="fw-bold">Descripción</h5>
+                <p class="text-muted">{{ bicicleta.descripcion }}</p>
+            </div>
+            {% endif %}
+
+            <div class="dashboard-card bg-dark text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="d-block opacity-75">Precio</small>
+                        <span class="display-5 fw-bold">${{ bicicleta.precio|floatformat:0 }}</span>
+                    </div>
+                    {% if bicicleta.disponible %}
+                    <a href="#" class="btn btn-accent btn-lg">
+                        <i class="bi bi-cart-plus me-2"></i>Agregar al Carrito
+                    </a>
+                    {% else %}
+                    <button class="btn btn-secondary btn-lg" disabled>
+                        <i class="bi bi-x-circle me-2"></i>Agotado
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

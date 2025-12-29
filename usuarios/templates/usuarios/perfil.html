@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="dashboard-card text-center">
+                <div class="mb-4">
+                    <i class="bi bi-person-circle display-1 text-primary"></i>
+                </div>
+                <h4 class="fw-bold">{{ usuario.get_full_name|default:usuario.username }}</h4>
+                <span class="badge badge-gama-alta">{{ usuario.get_rol_display }}</span>
+                <hr>
+                <p class="text-muted mb-1">
+                    <i class="bi bi-envelope me-2"></i>{{ usuario.email|default:"No registrado" }}
+                </p>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-calendar me-2"></i>Miembro desde {{ usuario.date_joined|date:"F Y" }}
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-person-lines-fill me-2"></i>Información Personal
+                </h5>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">Nombre de Usuario</label>
+                        <p class="fw-medium mb-0">{{ usuario.username }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Email</label>
+                        <p class="fw-medium mb-0">{{ usuario.email|default:"No registrado" }}</p>
+                    </div>
+
+                    {% if usuario.es_cliente %}
+                    <div class="col-md-6">
+                        <label class="text-muted small">Cédula</label>
+                        <p class="fw-medium mb-0">{{ usuario.cedula|default:"No registrado" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Celular</label>
+                        <p class="fw-medium mb-0">{{ usuario.celular|default:"No registrado" }}</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small">Dirección</label>
+                        <p class="fw-medium mb-0">{{ usuario.direccion|default:"No registrada" }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if usuario.es_cliente %}
+            <div class="dashboard-card mt-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-bag me-2"></i>Mis Pedidos Recientes
+                </h5>
+
+                {% if usuario.pedidos_cliente.exists %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pedido in usuario.pedidos_cliente.all|slice:":5" %}
+                            <tr>
+                                <td>{{ pedido.pk }}</td>
+                                <td>{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+                                <td>${{ pedido.total|floatformat:2 }}</td>
+                                <td><span class="badge badge-{{ pedido.estado }}">{{ pedido.get_estado_display }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'pedidos:lista' %}" class="btn btn-outline-primary btn-sm">Ver todos los pedidos</a>
+                {% else %}
+                <p class="text-muted">No tienes pedidos aún.</p>
+                <a href="{% url 'productos:catalogo' %}" class="btn btn-accent">Explorar Catálogo</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
