@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.db.models import Q
+from django.db.models import Q, Count, Sum
 from .models import Pedido, DetallePedido, HistorialEstadoPedido
 from .carrito import Carrito
 from productos.models import Bicicleta
@@ -11,13 +11,28 @@ from productos.models import Bicicleta
 
 @login_required
 def lista_pedidos(request):
-    """Lista de pedidos según el rol del usuario."""
+    """Lista de pedidos según el rol del usuario con métricas."""
     user = request.user
+    context = {}
     
     if user.es_cliente:
-        # Cliente: solo sus pedidos
+        # Cliente: solo sus pedidos con resumen por estado
         pedidos = Pedido.objects.filter(cliente=user)
-        pedidos_pendientes = None
+        
+        # Métricas del cliente
+        context['metricas'] = {
+            'pendientes': pedidos.filter(estado=Pedido.Estado.PENDIENTE).count(),
+            'en_proceso': pedidos.filter(estado__in=[
+                Pedido.Estado.CONFIRMADO, 
+                Pedido.Estado.DESPACHADO, 
+                Pedido.Estado.EN_CAMINO
+            ]).count(),
+            'entregados': pedidos.filter(estado=Pedido.Estado.ENTREGADO).count(),
+            'total_compras': pedidos.filter(estado=Pedido.Estado.ENTREGADO).aggregate(
+                total=Sum('total')
+            )['total'] or 0,
+        }
+        
     elif user.es_vendedor:
         # Vendedor: pedidos pendientes sin asignar + sus pedidos asignados
         pedidos_pendientes = Pedido.objects.filter(
@@ -27,18 +42,50 @@ def lista_pedidos(request):
         pedidos = Pedido.objects.filter(vendedor=user).exclude(
             estado__in=[Pedido.Estado.ENTREGADO, Pedido.Estado.CANCELADO]
         )
+        context['pedidos_pendientes'] = pedidos_pendientes
+        
+        # Métricas del vendedor
+        mis_pedidos = Pedido.objects.filter(vendedor=user)
+        context['metricas'] = {
+            'sin_asignar': pedidos_pendientes.count(),
+            'pendientes': mis_pedidos.filter(estado=Pedido.Estado.PENDIENTE).count(),
+            'confirmados': mis_pedidos.filter(estado=Pedido.Estado.CONFIRMADO).count(),
+            'despachados': mis_pedidos.filter(estado=Pedido.Estado.DESPACHADO).count(),
+            'en_camino': mis_pedidos.filter(estado=Pedido.Estado.EN_CAMINO).count(),
+            'entregados_total': mis_pedidos.filter(estado=Pedido.Estado.ENTREGADO).count(),
+        }
+        
     elif user.es_bodeguero:
         # Bodeguero: solo pedidos CONFIRMADOS (listos para despachar)
         pedidos = Pedido.objects.filter(estado=Pedido.Estado.CONFIRMADO)
-        pedidos_pendientes = None
+        
+        # Métricas del bodeguero
+        context['metricas'] = {
+            'para_despachar': pedidos.count(),
+            'despachados_hoy': Pedido.objects.filter(
+                estado=Pedido.Estado.DESPACHADO,
+                fecha_actualizacion__date=__import__('django.utils.timezone', fromlist=['now']).now().date()
+            ).count(),
+            'bajo_stock': Bicicleta.objects.filter(stock__lt=3, activo=True).count(),
+        }
+        
     else:  # Admin
         pedidos = Pedido.objects.all()
-        pedidos_pendientes = None
+        
+        # Métricas globales del admin
+        context['metricas'] = {
+            'total_pedidos': pedidos.count(),
+            'pendientes': pedidos.filter(estado=Pedido.Estado.PENDIENTE).count(),
+            'confirmados': pedidos.filter(estado=Pedido.Estado.CONFIRMADO).count(),
+            'despachados': pedidos.filter(estado=Pedido.Estado.DESPACHADO).count(),
+            'en_camino': pedidos.filter(estado=Pedido.Estado.EN_CAMINO).count(),
+            'entregados': pedidos.filter(estado=Pedido.Estado.ENTREGADO).count(),
+            'ingresos_totales': pedidos.filter(estado=Pedido.Estado.ENTREGADO).aggregate(
+                total=Sum('total')
+            )['total'] or 0,
+        }
     
-    context = {'pedidos': pedidos}
-    if user.es_vendedor:
-        context['pedidos_pendientes'] = pedidos_pendientes
-    
+    context['pedidos'] = pedidos
     return render(request, 'pedidos/lista.html', context)
 
 

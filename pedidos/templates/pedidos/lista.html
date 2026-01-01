@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if user.es_vendedor %}Gestión de Pedidos{% elif user.es_bodeguero %}Bodega - Despachos{% else %}Mis
-Pedidos{% endif %} - Aura Bikers{% endblock %}
+{% block title %}{% if user.es_vendedor %}Gestión de Pedidos{% elif user.es_bodeguero %}Bodega - Despachos{% elif
+user.es_admin %}Todos los Pedidos{% else %}Mis Pedidos{% endif %} - Aura Bikers{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -12,6 +12,8 @@ Pedidos{% endif %} - Aura Bikers{% endblock %}
                 <i class="bi bi-clipboard-check me-2"></i>Gestión de Pedidos
                 {% elif user.es_bodeguero %}
                 <i class="bi bi-box-seam me-2"></i>Pedidos para Despacho
+                {% elif user.es_admin %}
+                <i class="bi bi-graph-up me-2"></i>Panel de Pedidos
                 {% else %}
                 <i class="bi bi-bag me-2"></i>Mis Pedidos
                 {% endif %}
@@ -21,12 +23,125 @@ Pedidos{% endif %} - Aura Bikers{% endblock %}
                 Toma y confirma pedidos pendientes
                 {% elif user.es_bodeguero %}
                 Prepara y despacha pedidos confirmados
+                {% elif user.es_admin %}
+                Vista global de todos los pedidos
                 {% else %}
                 Historial y seguimiento de tus compras
                 {% endif %}
             </p>
         </div>
     </div>
+
+    <!-- Métricas -->
+    {% if metricas %}
+    <div class="row g-3 mb-4">
+        {% if user.es_cliente %}
+        <!-- Métricas Cliente -->
+        <div class="col-md-3">
+            <div class="dashboard-card text-center h-100">
+                <div class="display-6 fw-bold text-warning">{{ metricas.pendientes }}</div>
+                <small class="text-muted">Pendientes</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card text-center h-100">
+                <div class="display-6 fw-bold text-info">{{ metricas.en_proceso }}</div>
+                <small class="text-muted">En Proceso</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card text-center h-100">
+                <div class="display-6 fw-bold text-success">{{ metricas.entregados }}</div>
+                <small class="text-muted">Entregados</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card text-center h-100">
+                <div class="display-6 fw-bold text-accent">${{ metricas.total_compras|floatformat:0 }}</div>
+                <small class="text-muted">Total Compras</small>
+            </div>
+        </div>
+
+        {% elif user.es_vendedor %}
+        <!-- Métricas Vendedor -->
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100 border-warning">
+                <div class="fs-2 fw-bold text-warning">{{ metricas.sin_asignar }}</div>
+                <small class="text-muted">Sin Asignar</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-primary">{{ metricas.pendientes }}</div>
+                <small class="text-muted">Mis Pendientes</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-info">{{ metricas.confirmados }}</div>
+                <small class="text-muted">Confirmados</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-secondary">{{ metricas.despachados }}</div>
+                <small class="text-muted">Despachados</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-primary">{{ metricas.en_camino }}</div>
+                <small class="text-muted">En Camino</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-success">{{ metricas.entregados_total }}</div>
+                <small class="text-muted">Entregados</small>
+            </div>
+        </div>
+
+        {% elif user.es_admin %}
+        <!-- Métricas Admin -->
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold">{{ metricas.total_pedidos }}</div>
+                <small class="text-muted">Total</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-warning">{{ metricas.pendientes }}</div>
+                <small class="text-muted">Pendientes</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-info">{{ metricas.confirmados }}</div>
+                <small class="text-muted">Confirmados</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-primary">{{ metricas.en_camino }}</div>
+                <small class="text-muted">En Camino</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-success">{{ metricas.entregados }}</div>
+                <small class="text-muted">Entregados</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100 bg-dark text-white">
+                <div class="fs-4 fw-bold">${{ metricas.ingresos_totales|floatformat:0 }}</div>
+                <small class="opacity-75">Ingresos</small>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
 
     {% if user.es_vendedor and pedidos_pendientes %}
     <!-- Pedidos pendientes sin asignar (solo vendedor) -->
@@ -83,6 +198,8 @@ Pedidos{% endif %} - Aura Bikers{% endblock %}
             <i class="bi bi-person-check me-2 text-primary"></i>Mis Pedidos Asignados
             {% elif user.es_bodeguero %}
             <i class="bi bi-box-seam me-2 text-success"></i>Listos para Despachar
+            {% elif user.es_admin %}
+            <i class="bi bi-list-ul me-2"></i>Listado Completo
             {% else %}
             <i class="bi bi-bag me-2"></i>Historial de Pedidos
             {% endif %}
@@ -94,6 +211,7 @@ Pedidos{% endif %} - Aura Bikers{% endblock %}
                         <th># Pedido</th>
                         <th>Fecha</th>
                         {% if not user.es_cliente %}<th>Cliente</th>{% endif %}
+                        {% if user.es_admin %}<th>Vendedor</th>{% endif %}
                         <th>Total</th>
                         <th>Estado</th>
                         <th>Acciones</th>
@@ -105,6 +223,7 @@ Pedidos{% endif %} - Aura Bikers{% endblock %}
                         <td><strong>#{{ pedido.pk }}</strong></td>
                         <td>{{ pedido.fecha_creacion|date:"d/m/Y H:i" }}</td>
                         {% if not user.es_cliente %}<td>{{ pedido.cliente.username }}</td>{% endif %}
+                        {% if user.es_admin %}<td>{{ pedido.vendedor.username|default:"-" }}</td>{% endif %}
                         <td><strong>${{ pedido.total|floatformat:0 }}</strong></td>
                         <td><span class="badge badge-{{ pedido.estado }}">{{ pedido.get_estado_display }}</span></td>
                         <td>

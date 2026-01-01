@@ -13,6 +13,48 @@
         </div>
     </div>
 
+    <!-- Métricas Operativas -->
+    {% if metricas %}
+    <div class="row g-3 mb-4">
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100 {% if metricas.para_despachar > 0 %}border-success{% endif %}">
+                <div class="fs-2 fw-bold text-success">{{ metricas.para_despachar }}</div>
+                <small class="text-muted">Para Despachar</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-info">{{ metricas.despachados_hoy }}</div>
+                <small class="text-muted">Despachados</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100 {% if metricas.bajo_stock > 0 %}border-warning{% endif %}">
+                <div class="fs-2 fw-bold text-warning">{{ metricas.bajo_stock }}</div>
+                <small class="text-muted">Bajo Stock</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100 {% if metricas.sin_stock > 0 %}border-danger{% endif %}">
+                <div class="fs-2 fw-bold text-danger">{{ metricas.sin_stock }}</div>
+                <small class="text-muted">Sin Stock</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold text-secondary">{{ metricas.danos_pendientes }}</div>
+                <small class="text-muted">Daños Pend.</small>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="dashboard-card text-center h-100">
+                <div class="fs-2 fw-bold">{{ metricas.total_productos }}</div>
+                <small class="text-muted">Productos</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Quick Actions -->
     <div class="row g-4 mb-5">
         <div class="col-md-4">

@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.utils import timezone
+from django.db.models import Sum, Count
 from .models import IngresoStock, ProductoDanado, ConfirmacionDespacho
 from pedidos.models import Pedido
 from productos.models import Bicicleta
@@ -20,16 +22,35 @@ def bodeguero_required(view_func):
 
 @bodeguero_required
 def panel_bodega(request):
-    """Panel principal del bodeguero."""
+    """Panel principal del bodeguero con métricas operativas."""
+    hoy = timezone.now().date()
+    
     # Solo pedidos CONFIRMADOS (listos para despachar)
     pedidos_para_despacho = Pedido.objects.filter(estado=Pedido.Estado.CONFIRMADO)
     ingresos_recientes = IngresoStock.objects.all()[:10]
     danos_pendientes = ProductoDanado.objects.filter(resuelto=False)
     
+    # Métricas operativas
+    metricas = {
+        'para_despachar': pedidos_para_despacho.count(),
+        'despachados_hoy': Pedido.objects.filter(
+            estado=Pedido.Estado.DESPACHADO
+        ).count(),
+        'bajo_stock': Bicicleta.objects.filter(stock__lt=3, activo=True).count(),
+        'sin_stock': Bicicleta.objects.filter(stock=0, activo=True).count(),
+        'danos_pendientes': danos_pendientes.count(),
+        'total_productos': Bicicleta.objects.filter(activo=True).count(),
+    }
+    
+    # Productos con bajo stock
+    productos_bajo_stock = Bicicleta.objects.filter(stock__lt=5, activo=True).order_by('stock')[:5]
+    
     context = {
         'pedidos_para_despacho': pedidos_para_despacho,
         'ingresos_recientes': ingresos_recientes,
         'danos_pendientes': danos_pendientes,
+        'metricas': metricas,
+        'productos_bajo_stock': productos_bajo_stock,
     }
     return render(request, 'bodega/panel.html', context)
 
