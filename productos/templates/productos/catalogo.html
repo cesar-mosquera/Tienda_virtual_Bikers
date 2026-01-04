@@ -138,9 +138,32 @@
                 </div>
 
                 <div class="card-footer bg-transparent border-0 pb-3">
-                    <a href="{% url 'productos:detalle' bicicleta.pk %}" class="btn btn-outline-accent w-100">
-                        <i class="bi bi-eye me-1"></i>Ver Detalles
-                    </a>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'productos:detalle' bicicleta.pk %}" class="btn btn-outline-accent flex-grow-1">
+                            <i class="bi bi-eye me-1"></i>Detalles
+                        </a>
+                        {% if user.is_authenticated and bicicleta.stock > 0 %}
+                        <form method="post" action="{% url 'pedidos:agregar_carrito' bicicleta.pk %}"
+                            class="flex-grow-1">
+                            {% csrf_token %}
+                            <input type="hidden" name="cantidad" value="1">
+                            <input type="hidden" name="next"
+                                value="{{ request.path }}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}">
+                            <button type="submit" class="btn btn-accent w-100">
+                                <i class="bi bi-cart-plus"></i>
+                            </button>
+                        </form>
+                        {% elif bicicleta.stock == 0 %}
+                        <button class="btn btn-secondary flex-grow-1" disabled>
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                        {% else %}
+                        <a href="{% url 'login' %}?next={{ request.path }}"
+                            class="btn btn-outline-secondary flex-grow-1">
+                            <i class="bi bi-cart-plus"></i>
+                        </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
