@@ -6,11 +6,12 @@ from productos.models import Bicicleta
 class Pedido(models.Model):
     """
     Modelo para gestión de pedidos con flujo de estados.
-    Estados: Pendiente -> Despachado -> En Camino -> Entregado
+    Estados: Pendiente -> Confirmado -> Despachado -> En Camino -> Entregado
     """
     
     class Estado(models.TextChoices):
         PENDIENTE = 'pendiente', 'Pendiente'
+        CONFIRMADO = 'confirmado', 'Confirmado'
         DESPACHADO = 'despachado', 'Despachado'
         EN_CAMINO = 'en_camino', 'En Camino'
         ENTREGADO = 'entregado', 'Entregado'

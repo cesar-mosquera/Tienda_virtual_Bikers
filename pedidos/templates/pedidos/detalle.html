@@ -29,7 +29,7 @@
                         <div class="p-3 bg-light rounded">
                             <small class="text-muted d-block">Cliente</small>
                             <strong>{{ pedido.cliente.get_full_name|default:pedido.cliente.username }}</strong>
-                            <br><small class="text-muted">{{ pedido.cliente.cedula }}</small>
+                            <br><small class="text-muted">{{ pedido.cliente.celular|default:"" }}</small>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -44,6 +44,13 @@
                     <small class="text-muted d-block">Dirección de Envío</small>
                     <strong>{{ pedido.direccion_envio }}</strong>
                 </div>
+
+                {% if pedido.notas %}
+                <div class="p-3 bg-warning bg-opacity-10 rounded mb-4">
+                    <small class="text-muted d-block">Notas del Pedido</small>
+                    <span>{{ pedido.notas }}</span>
+                </div>
+                {% endif %}
 
                 <!-- Products -->
                 <h5 class="fw-bold mb-3">Productos</h5>
@@ -62,8 +69,8 @@
                             <tr>
                                 <td>{{ detalle.bicicleta.marca }} {{ detalle.bicicleta.modelo }}</td>
                                 <td class="text-center">{{ detalle.cantidad }}</td>
-                                <td class="text-end">${{ detalle.precio_unitario|floatformat:2 }}</td>
-                                <td class="text-end"><strong>${{ detalle.subtotal|floatformat:2 }}</strong></td>
+                                <td class="text-end">${{ detalle.precio_unitario|floatformat:0 }}</td>
+                                <td class="text-end"><strong>${{ detalle.subtotal|floatformat:0 }}</strong></td>
                             </tr>
                             {% empty %}
                             <tr>
@@ -74,7 +81,7 @@
                         <tfoot class="table-light">
                             <tr>
                                 <td colspan="3" class="text-end fw-bold">Total:</td>
-                                <td class="text-end fw-bold fs-5">${{ pedido.total|floatformat:2 }}</td>
+                                <td class="text-end fw-bold fs-5">${{ pedido.total|floatformat:0 }}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -103,40 +110,64 @@
                             <small class="text-muted">
                                 Por {{ registro.cambiado_por.username }} - {{ registro.fecha|date:"d/m/Y H:i" }}
                             </small>
-                            {% if registro.notas %}
-                            <p class="mb-0 small text-muted mt-1">{{ registro.notas }}</p>
-                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <p class="text-muted mb-0">No hay cambios de estado registrados.</p>
+                <p class="text-muted mb-0">Pedido creado. Esperando acción.</p>
                 {% endif %}
             </div>
         </div>
 
         <!-- Actions Sidebar -->
         <div class="col-lg-4">
-            <div class="dashboard-card">
+            <div class="dashboard-card sticky-top" style="top: 100px;">
                 <h5 class="fw-bold mb-3">Acciones</h5>
 
-                {% if user.es_bodeguero and pedido.estado == 'pendiente' %}
-                <a href="{% url 'bodega:confirmar_despacho' pedido.pk %}" class="btn btn-success w-100 mb-2">
-                    <i class="bi bi-box-seam me-2"></i>Confirmar Despacho
-                </a>
+                <!-- VENDEDOR: Tomar pedido (si está pendiente y sin vendedor) -->
+                {% if user.es_vendedor and pedido.estado == 'pendiente' and not pedido.vendedor %}
+                <form method="post" action="{% url 'pedidos:tomar' pedido.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success w-100 mb-2">
+                        <i class="bi bi-hand-index-thumb me-2"></i>Tomar Este Pedido
+                    </button>
+                </form>
                 {% endif %}
 
-                {% if user.es_vendedor or user.es_admin %}
-                {% if pedido.estado == 'despachado' %}
+                <!-- VENDEDOR: Confirmar pedido (si es suyo y está pendiente) -->
+                {% if user.es_vendedor and pedido.vendedor == user and pedido.estado == 'pendiente' %}
+                <form method="post" action="{% url 'pedidos:confirmar_vendedor' pedido.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-check-circle me-2"></i>Confirmar para Bodega
+                    </button>
+                </form>
+                {% endif %}
+
+                <!-- BODEGUERO: Despachar pedido -->
+                {% if user.es_bodeguero and pedido.estado == 'confirmado' %}
+                <form method="post" action="{% url 'pedidos:despachar' pedido.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning w-100 mb-2">
+                        <i class="bi bi-truck me-2"></i>Despachar y Descontar Stock
+                    </button>
+                </form>
+                {% endif %}
+
+                <!-- VENDEDOR: Marcar en camino -->
+                {% if user.es_vendedor and pedido.vendedor == user and pedido.estado == 'despachado' %}
                 <form method="post" action="{% url 'pedidos:cambiar_estado' pedido.pk %}">
                     {% csrf_token %}
                     <input type="hidden" name="estado" value="en_camino">
-                    <button type="submit" class="btn btn-primary w-100 mb-2">
+                    <button type="submit" class="btn btn-info w-100 mb-2">
                         <i class="bi bi-truck me-2"></i>Marcar En Camino
                     </button>
                 </form>
-                {% elif pedido.estado == 'en_camino' %}
+                {% endif %}
+
+                <!-- VENDEDOR: Marcar entregado -->
+                {% if user.es_vendedor and pedido.vendedor == user and pedido.estado == 'en_camino' %}
                 <form method="post" action="{% url 'pedidos:cambiar_estado' pedido.pk %}">
                     {% csrf_token %}
                     <input type="hidden" name="estado" value="entregado">
@@ -145,11 +176,25 @@
                     </button>
                 </form>
                 {% endif %}
+
+                <!-- ADMIN: Todas las acciones -->
+                {% if user.es_admin and pedido.estado != 'entregado' and pedido.estado != 'cancelado' %}
+                <a href="{% url 'pedidos:cambiar_estado' pedido.pk %}" class="btn btn-outline-secondary w-100 mb-2">
+                    <i class="bi bi-gear me-2"></i>Cambiar Estado (Admin)
+                </a>
                 {% endif %}
+
+                <hr>
 
                 <a href="{% url 'pedidos:lista' %}" class="btn btn-outline-secondary w-100">
                     <i class="bi bi-arrow-left me-2"></i>Volver a Pedidos
                 </a>
+
+                <!-- Estado actual info -->
+                <div class="mt-4 p-3 bg-light rounded text-center">
+                    <small class="text-muted d-block">Estado Actual</small>
+                    <span class="badge badge-{{ pedido.estado }} fs-6">{{ pedido.get_estado_display }}</span>
+                </div>
             </div>
         </div>
     </div>
