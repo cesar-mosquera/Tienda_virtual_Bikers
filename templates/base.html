@@ -44,21 +44,53 @@
                         <a class="nav-link" href="{% url 'productos:catalogo' %}">Catálogo</a>
                     </li>
                     {% if user.is_authenticated %}
-                    {% if user.es_cliente or user.es_vendedor %}
+
+                    {% if user.es_cliente %}
+                    <!-- Menú Cliente -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pedidos:lista' %}">Mis Pedidos</a>
+                        <a class="nav-link" href="{% url 'pedidos:lista' %}">
+                            <i class="bi bi-bag me-1"></i>Mis Pedidos
+                        </a>
                     </li>
                     {% endif %}
-                    {% if user.es_bodeguero or user.es_admin %}
+
+                    {% if user.es_vendedor %}
+                    <!-- Menú Vendedor -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'bodega:panel' %}">Bodega</a>
+                        <a class="nav-link" href="{% url 'pedidos:lista' %}">
+                            <i class="bi bi-clipboard-check me-1"></i>Gestión Pedidos
+                        </a>
                     </li>
                     {% endif %}
+
+                    {% if user.es_bodeguero %}
+                    <!-- Menú Bodeguero -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'bodega:panel' %}">
+                            <i class="bi bi-box-seam me-1"></i>Panel Bodega
+                        </a>
+                    </li>
+                    {% endif %}
+
                     {% if user.es_admin %}
+                    <!-- Menú Admin -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'administracion:dashboard' %}">Dashboard</a>
+                        <a class="nav-link" href="{% url 'pedidos:lista' %}">
+                            <i class="bi bi-bag me-1"></i>Pedidos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'bodega:panel' %}">
+                            <i class="bi bi-box-seam me-1"></i>Bodega
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'administracion:dashboard' %}">
+                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        </a>
                     </li>
                     {% endif %}
+
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">

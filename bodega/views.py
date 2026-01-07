@@ -21,12 +21,13 @@ def bodeguero_required(view_func):
 @bodeguero_required
 def panel_bodega(request):
     """Panel principal del bodeguero."""
-    pedidos_pendientes = Pedido.objects.filter(estado=Pedido.Estado.PENDIENTE)
+    # Solo pedidos CONFIRMADOS (listos para despachar)
+    pedidos_para_despacho = Pedido.objects.filter(estado=Pedido.Estado.CONFIRMADO)
     ingresos_recientes = IngresoStock.objects.all()[:10]
     danos_pendientes = ProductoDanado.objects.filter(resuelto=False)
     
     context = {
-        'pedidos_pendientes': pedidos_pendientes,
+        'pedidos_para_despacho': pedidos_para_despacho,
         'ingresos_recientes': ingresos_recientes,
         'danos_pendientes': danos_pendientes,
     }

@@ -52,13 +52,14 @@
         </div>
     </div>
 
-    <!-- Pending Orders for Dispatch -->
+    <!-- Confirmed Orders for Dispatch -->
     <div class="dashboard-card mb-4">
         <h5 class="fw-bold mb-3">
-            <i class="bi bi-truck me-2"></i>Pedidos Pendientes de Despacho
+            <i class="bi bi-truck me-2"></i>Pedidos Confirmados - Listos para Despacho
+            <span class="badge bg-success ms-2">{{ pedidos_para_despacho.count }}</span>
         </h5>
 
-        {% if pedidos_pendientes %}
+        {% if pedidos_para_despacho %}
         <div class="table-responsive">
             <table class="table">
                 <thead class="table-light">
@@ -71,15 +72,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for pedido in pedidos_pendientes %}
+                    {% for pedido in pedidos_para_despacho %}
                     <tr>
                         <td><strong>#{{ pedido.pk }}</strong></td>
                         <td>{{ pedido.cliente.username }}</td>
                         <td>{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
                         <td>{{ pedido.direccion_envio|truncatechars:40 }}</td>
                         <td>
-                            <a href="{% url 'bodega:confirmar_despacho' pedido.pk %}" class="btn btn-sm btn-success">
-                                <i class="bi bi-check-lg me-1"></i>Despachar
+                            <form method="post" action="{% url 'pedidos:despachar' pedido.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="bi bi-truck me-1"></i>Despachar
+                                </button>
+                            </form>
+                            <a href="{% url 'pedidos:detalle' pedido.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
                             </a>
                         </td>
                     </tr>
@@ -88,7 +95,8 @@
             </table>
         </div>
         {% else %}
-        <p class="text-muted mb-0">No hay pedidos pendientes de despacho.</p>
+        <p class="text-muted mb-0">No hay pedidos confirmados para despachar. Los pedidos aparecerán aquí cuando un
+            vendedor los confirme.</p>
         {% endif %}
     </div>
 
