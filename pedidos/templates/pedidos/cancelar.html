@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancelar Pedido #{{ pedido.pk }} - Aura Bikers{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <div class="text-center mb-4">
+                    <div class="icon mx-auto mb-3" style="background: linear-gradient(135deg, var(--danger), #dc2626);">
+                        <i class="bi bi-x-circle text-white"></i>
+                    </div>
+                    <h3 class="fw-bold">Cancelar Pedido</h3>
+                    <p class="text-muted">Pedido #{{ pedido.pk }}</p>
+                </div>
+
+                <!-- Resumen del pedido -->
+                <div class="bg-light rounded p-3 mb-4">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <small class="text-muted d-block">Estado Actual</small>
+                            <span class="badge badge-{{ pedido.estado }}">{{ pedido.get_estado_display }}</span>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted d-block">Cliente</small>
+                            <strong>{{ pedido.cliente.username }}</strong>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted d-block">Total</small>
+                            <strong>${{ pedido.total|floatformat:0 }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                {% if pedido.estado == 'despachado' %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Atención:</strong> Este pedido ya fue despachado. Al cancelarlo, el stock será restaurado
+                    automáticamente.
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if requiere_motivo %}
+                    <div class="mb-4">
+                        <label for="motivo" class="form-label">Motivo de la cancelación <span
+                                class="text-danger">*</span></label>
+                        <textarea name="motivo" id="motivo" class="form-control" rows="3"
+                            placeholder="Explica el motivo de la cancelación..." required></textarea>
+                    </div>
+                    {% else %}
+                    <div class="mb-4">
+                        <label for="motivo" class="form-label">Motivo (opcional)</label>
+                        <textarea name="motivo" id="motivo" class="form-control" rows="3"
+                            placeholder="Puedes indicar un motivo si lo deseas..."></textarea>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="bi bi-x-circle me-2"></i>Confirmar Cancelación
+                        </button>
+                        <a href="{% url 'pedidos:detalle' pedido.pk %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Volver al Pedido
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

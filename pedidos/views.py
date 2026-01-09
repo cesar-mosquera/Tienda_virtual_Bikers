@@ -236,6 +236,73 @@ def despachar_pedido(request, pk):
     return redirect('pedidos:detalle', pk=pk)
 
 
+@login_required
+def cancelar_pedido(request, pk):
+    """Cancelar un pedido con reglas de negocio."""
+    pedido = get_object_or_404(Pedido, pk=pk)
+    user = request.user
+    
+    # No se puede cancelar un pedido ya entregado o cancelado
+    if pedido.estado in [Pedido.Estado.ENTREGADO, Pedido.Estado.CANCELADO]:
+        messages.error(request, 'Este pedido no puede ser cancelado.')
+        return redirect('pedidos:detalle', pk=pk)
+    
+    # Verificar permisos según rol
+    puede_cancelar = False
+    requiere_motivo = True
+    
+    if user.es_admin:
+        # Admin puede cancelar cualquier pedido (excepto entregado)
+        puede_cancelar = True
+    elif user.es_vendedor and (pedido.vendedor == user or pedido.vendedor is None):
+        # Vendedor puede cancelar PENDIENTE o CONFIRMADO
+        if pedido.estado in [Pedido.Estado.PENDIENTE, Pedido.Estado.CONFIRMADO]:
+            puede_cancelar = True
+    elif user.es_cliente and pedido.cliente == user:
+        # Cliente solo puede cancelar PENDIENTE
+        if pedido.estado == Pedido.Estado.PENDIENTE:
+            puede_cancelar = True
+            requiere_motivo = False
+    
+    if not puede_cancelar:
+        messages.error(request, 'No tienes permiso para cancelar este pedido.')
+        return redirect('pedidos:detalle', pk=pk)
+    
+    if request.method == 'POST':
+        motivo = request.POST.get('motivo', '').strip()
+        
+        if requiere_motivo and not motivo:
+            messages.error(request, 'Debes indicar un motivo para la cancelación.')
+            return render(request, 'pedidos/cancelar.html', {
+                'pedido': pedido,
+                'requiere_motivo': requiere_motivo
+            })
+        
+        # Si el pedido ya fue despachado, restaurar stock
+        if pedido.estado == Pedido.Estado.DESPACHADO:
+            for detalle in pedido.detalles.all():
+                detalle.bicicleta.stock += detalle.cantidad
+                detalle.bicicleta.save()
+            messages.info(request, 'Stock restaurado.')
+        
+        # Cambiar estado a CANCELADO
+        notas_cancelacion = f"Cancelado por {user.username}"
+        if motivo:
+            notas_cancelacion += f". Motivo: {motivo}"
+        
+        pedido.notas = notas_cancelacion if not pedido.notas else f"{pedido.notas}\n{notas_cancelacion}"
+        pedido.save(update_fields=['notas'])
+        pedido.cambiar_estado(Pedido.Estado.CANCELADO, user)
+        
+        messages.success(request, f'Pedido #{pedido.pk} cancelado exitosamente.')
+        return redirect('pedidos:lista')
+    
+    return render(request, 'pedidos/cancelar.html', {
+        'pedido': pedido,
+        'requiere_motivo': requiere_motivo
+    })
+
+
 # ============================================================
 # VISTAS DEL CARRITO
 # ============================================================

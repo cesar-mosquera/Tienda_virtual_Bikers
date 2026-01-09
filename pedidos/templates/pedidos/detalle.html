@@ -184,6 +184,24 @@
                 </a>
                 {% endif %}
 
+                <!-- CANCELAR PEDIDO -->
+                {% if pedido.estado != 'entregado' and pedido.estado != 'cancelado' %}
+                {% if user.es_admin %}
+                <a href="{% url 'pedidos:cancelar' pedido.pk %}" class="btn btn-outline-danger w-100 mb-2">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar Pedido
+                </a>
+                {% elif user.es_vendedor and pedido.estado == 'pendiente' or user.es_vendedor and pedido.estado ==
+                'confirmado' %}
+                <a href="{% url 'pedidos:cancelar' pedido.pk %}" class="btn btn-outline-danger w-100 mb-2">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar Pedido
+                </a>
+                {% elif user.es_cliente and pedido.cliente == user and pedido.estado == 'pendiente' %}
+                <a href="{% url 'pedidos:cancelar' pedido.pk %}" class="btn btn-outline-danger w-100 mb-2">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar Pedido
+                </a>
+                {% endif %}
+                {% endif %}
+
                 <hr>
 
                 <a href="{% url 'pedidos:lista' %}" class="btn btn-outline-secondary w-100">
