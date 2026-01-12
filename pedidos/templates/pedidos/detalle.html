@@ -190,8 +190,11 @@
                 <a href="{% url 'pedidos:cancelar' pedido.pk %}" class="btn btn-outline-danger w-100 mb-2">
                     <i class="bi bi-x-circle me-2"></i>Cancelar Pedido
                 </a>
-                {% elif user.es_vendedor and pedido.estado == 'pendiente' or user.es_vendedor and pedido.estado ==
-                'confirmado' %}
+                {% elif user.es_vendedor and pedido.estado == 'pendiente' %}
+                <a href="{% url 'pedidos:cancelar' pedido.pk %}" class="btn btn-outline-danger w-100 mb-2">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar Pedido
+                </a>
+                {% elif user.es_vendedor and pedido.estado == 'confirmado' %}
                 <a href="{% url 'pedidos:cancelar' pedido.pk %}" class="btn btn-outline-danger w-100 mb-2">
                     <i class="bi bi-x-circle me-2"></i>Cancelar Pedido
                 </a>
@@ -203,6 +206,18 @@
                 {% endif %}
 
                 <hr>
+
+                <!-- FACTURA: Disponible para cualquier pedido no cancelado -->
+                {% if pedido.estado != 'cancelado' %}
+                <div class="d-grid gap-2 mb-3">
+                    <a href="{% url 'pedidos:factura' pedido.pk %}" class="btn btn-outline-success" target="_blank">
+                        <i class="bi bi-eye me-2"></i>Ver Factura
+                    </a>
+                    <a href="{% url 'pedidos:factura' pedido.pk %}?descargar=1" class="btn btn-success">
+                        <i class="bi bi-download me-2"></i>Descargar Factura PDF
+                    </a>
+                </div>
+                {% endif %}
 
                 <a href="{% url 'pedidos:lista' %}" class="btn btn-outline-secondary w-100">
                     <i class="bi bi-arrow-left me-2"></i>Volver a Pedidos

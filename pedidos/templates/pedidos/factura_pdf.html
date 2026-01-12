@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Factura #{{ pedido.pk }}</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .header {
+            border-bottom: 3px solid #f59e0b;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1e3a5f;
+        }
+
+        .logo span {
+            color: #f59e0b;
+        }
+
+        .empresa-info {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .factura-titulo {
+            text-align: right;
+            font-size: 24px;
+            color: #1e3a5f;
+            font-weight: bold;
+        }
+
+        .factura-numero {
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .info-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .info-box h3 {
+            margin: 0 0 10px 0;
+            color: #1e3a5f;
+            font-size: 14px;
+        }
+
+        .info-box p {
+            margin: 3px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th {
+            background-color: #1e3a5f;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        th.text-right,
+        td.text-right {
+            text-align: right;
+        }
+
+        th.text-center,
+        td.text-center {
+            text-align: center;
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .totales {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .totales table {
+            width: 300px;
+            margin-left: auto;
+        }
+
+        .totales td {
+            padding: 8px;
+            border: none;
+        }
+
+        .total-final {
+            background-color: #1e3a5f;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        .estado-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background-color: #10b981;
+            color: white;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <table class="header" style="border-bottom: 3px solid #f59e0b;">
+        <tr>
+            <td style="width: 60%; border: none;">
+                <div class="logo">🚲 Aura <span>Bikers</span></div>
+                <div class="empresa-info">
+                    RUC: {{ empresa.ruc }}<br>
+                    {{ empresa.direccion }}<br>
+                    {{ empresa.telefono }} | {{ empresa.email }}
+                </div>
+            </td>
+            <td style="width: 40%; border: none; text-align: right;">
+                <div class="factura-titulo">FACTURA</div>
+                <div class="factura-numero">
+                    <strong>N° {{ pedido.pk }}</strong><br>
+                    Fecha Pedido: {{ pedido.fecha_creacion|date:"d/m/Y H:i" }}<br>
+                    Última Actualización: {{ pedido.fecha_actualizacion|date:"d/m/Y H:i" }}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Info Cliente -->
+    <div class="info-box">
+        <h3>DATOS DEL CLIENTE</h3>
+        <p><strong>{{ pedido.cliente.get_full_name|default:pedido.cliente.username }}</strong></p>
+        <p>{{ pedido.cliente.email }}</p>
+        <p>{{ pedido.direccion_envio }}</p>
+    </div>
+
+    <!-- Estado -->
+    <p>
+        Estado del pedido: <span class="estado-badge">{{ pedido.get_estado_display }}</span>
+    </p>
+
+    <!-- Productos -->
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 50%;">Producto</th>
+                <th class="text-center">Cantidad</th>
+                <th class="text-right">Precio Unit.</th>
+                <th class="text-right">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in pedido.detalles.all %}
+            <tr>
+                <td>{{ detalle.bicicleta.marca }} {{ detalle.bicicleta.modelo }}</td>
+                <td class="text-center">{{ detalle.cantidad }}</td>
+                <td class="text-right">${{ detalle.precio_unitario|floatformat:0 }}</td>
+                <td class="text-right">${{ detalle.subtotal|floatformat:0 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Totales -->
+    <div class="totales">
+        <table>
+            <tr>
+                <td>Subtotal:</td>
+                <td class="text-right">${{ pedido.total|floatformat:0 }}</td>
+            </tr>
+            <tr>
+                <td>IVA (0%):</td>
+                <td class="text-right">$0</td>
+            </tr>
+            <tr class="total-final">
+                <td><strong>TOTAL:</strong></td>
+                <td class="text-right"><strong>${{ pedido.total|floatformat:0 }}</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    {% if pedido.notas %}
+    <div class="info-box" style="margin-top: 30px;">
+        <h3>NOTAS</h3>
+        <p>{{ pedido.notas }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Gracias por tu compra | {{ empresa.nombre }} | {{ empresa.email }}</p>
+    </div>
+</body>
+
+</html>

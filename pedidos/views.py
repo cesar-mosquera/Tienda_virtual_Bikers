@@ -303,6 +303,43 @@ def cancelar_pedido(request, pk):
     })
 
 
+@login_required
+def descargar_factura(request, pk):
+    """Ver o descargar factura PDF del pedido."""
+    from .factura import descargar_factura_response
+    
+    pedido = get_object_or_404(Pedido, pk=pk)
+    user = request.user
+    
+    # Verificar permisos
+    puede_ver = False
+    if user.es_admin:
+        puede_ver = True
+    elif user.es_vendedor and pedido.vendedor == user:
+        puede_ver = True
+    elif user.es_cliente and pedido.cliente == user:
+        puede_ver = True
+    
+    if not puede_ver:
+        messages.error(request, 'No tienes permiso para ver esta factura.')
+        return redirect('pedidos:lista')
+    
+    # No se puede generar factura de pedidos cancelados
+    if pedido.estado == Pedido.Estado.CANCELADO:
+        messages.warning(request, 'No se puede generar factura de un pedido cancelado.')
+        return redirect('pedidos:detalle', pk=pk)
+    
+    # Verificar si es descarga o visualización
+    descargar = request.GET.get('descargar', '0') == '1'
+    
+    response = descargar_factura_response(pedido, descargar=descargar)
+    if response is None:
+        messages.error(request, 'Error al generar la factura.')
+        return redirect('pedidos:detalle', pk=pk)
+    
+    return response
+
+
 # ============================================================
 # VISTAS DEL CARRITO
 # ============================================================
