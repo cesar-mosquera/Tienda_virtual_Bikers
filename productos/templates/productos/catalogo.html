@@ -16,43 +16,78 @@
     <!-- Filters -->
     <div class="dashboard-card mb-4">
         <form method="get" class="row g-3 align-items-end">
+            <!-- Búsqueda por texto -->
             <div class="col-md-3">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="q" class="form-control" placeholder="Marca o modelo..."
+                    value="{{ filtro_busqueda }}">
+            </div>
+
+            <!-- Filtro por Gama -->
+            <div class="col-md-2">
                 <label class="form-label">Gama</label>
                 <select name="gama" class="form-select">
-                    <option value="">Todas las gamas</option>
+                    <option value="">Todas</option>
                     {% for value, label in gamas %}
-                    <option value="{{ value }}" {% if request.GET.gama==value %}selected{% endif %}>{{ label }}</option>
+                    <option value="{{ value }}" {% if filtro_gama==value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3">
+
+            <!-- Filtro por Tipo -->
+            <div class="col-md-2">
                 <label class="form-label">Tipo</label>
                 <select name="tipo" class="form-select">
-                    <option value="">Todos los tipos</option>
+                    <option value="">Todos</option>
                     {% for value, label in tipos %}
-                    <option value="{{ value }}" {% if request.GET.tipo==value %}selected{% endif %}>{{ label }}</option>
+                    <option value="{{ value }}" {% if filtro_tipo==value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Marca</label>
-                <input type="text" name="marca" class="form-control" placeholder="Buscar por marca..."
-                    value="{{ request.GET.marca }}">
-            </div>
+
+            <!-- Filtro por Marca -->
             <div class="col-md-2">
-                <button type="submit" class="btn btn-accent w-100">
-                    <i class="bi bi-search me-1"></i>Filtrar
-                </button>
+                <label class="form-label">Marca</label>
+                <select name="marca" class="form-select">
+                    <option value="">Todas</option>
+                    {% for m in marcas %}
+                    <option value="{{ m }}" {% if filtro_marca==m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Botones -->
+            <div class="col-md-3">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-accent flex-grow-1">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                    {% if hay_filtros %}
+                    <a href="{% url 'productos:catalogo' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </form>
     </div>
+
+    <!-- Results Count -->
+    {% if bicicletas %}
+    <p class="text-muted mb-3">
+        <i class="bi bi-bicycle me-1"></i>
+        {{ bicicletas|length }} bicicleta{{ bicicletas|length|pluralize:"s" }} encontrada{{
+        bicicletas|length|pluralize:"s" }}
+        {% if hay_filtros %} con los filtros aplicados{% endif %}
+    </p>
+    {% endif %}
 
     <!-- Products Grid -->
     <div class="row g-4">
         {% for bicicleta in bicicletas %}
         <div class="col-md-6 col-lg-4">
             <div class="card card-product h-100">
-                <div class="overflow-hidden">
+                <div class="overflow-hidden position-relative">
                     {% if bicicleta.imagen %}
                     <img src="{{ bicicleta.imagen.url }}" class="card-img-top" alt="{{ bicicleta.modelo }}">
                     {% else %}
@@ -61,38 +96,71 @@
                         <i class="bi bi-bicycle display-1 text-muted"></i>
                     </div>
                     {% endif %}
+
+                    <!-- Badge de Stock -->
+                    {% if bicicleta.stock == 0 %}
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge bg-danger fs-6">
+                            <i class="bi bi-x-circle me-1"></i>AGOTADO
+                        </span>
+                    </div>
+                    {% endif %}
                 </div>
+
                 <div class="card-body">
+                    <!-- Badges de Gama y Tipo -->
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <span class="badge badge-gama-{{ bicicleta.gama }}">{{ bicicleta.get_gama_display }}</span>
                         <span class="badge badge-{{ bicicleta.tipo }}">{{ bicicleta.get_tipo_display }}</span>
                     </div>
-                    <h5 class="card-title">{{ bicicleta.marca }} {{ bicicleta.modelo }}</h5>
+
+                    <!-- Marca + Modelo -->
+                    <h5 class="card-title mb-1">{{ bicicleta.marca }}</h5>
+                    <p class="text-muted mb-2">{{ bicicleta.modelo }}</p>
+
+                    <!-- Medida del marco -->
                     <p class="text-muted small mb-2">
                         <i class="bi bi-rulers me-1"></i>Marco: {{ bicicleta.get_medida_marco_display }}
                     </p>
+
+                    <!-- Precio y Estado -->
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="price">${{ bicicleta.precio|floatformat:0 }}</span>
-                        {% if bicicleta.disponible %}
-                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>En Stock</span>
+                        {% if bicicleta.stock > 0 %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>Disponible
+                        </span>
                         {% else %}
-                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Agotado</span>
+                        <span class="badge bg-danger">
+                            <i class="bi bi-x-circle me-1"></i>Agotado
+                        </span>
                         {% endif %}
                     </div>
                 </div>
+
                 <div class="card-footer bg-transparent border-0 pb-3">
                     <a href="{% url 'productos:detalle' bicicleta.pk %}" class="btn btn-outline-accent w-100">
-                        Ver Detalles
+                        <i class="bi bi-eye me-1"></i>Ver Detalles
                     </a>
                 </div>
             </div>
         </div>
         {% empty %}
+        <!-- Mensaje cuando no hay resultados -->
         <div class="col-12">
             <div class="dashboard-card text-center py-5">
+                {% if hay_filtros %}
+                <i class="bi bi-funnel display-1 text-muted mb-3"></i>
+                <h5 class="fw-bold">No hay bicicletas con esos filtros</h5>
+                <p class="text-muted mb-4">Intenta ajustar los criterios de búsqueda o elimina algunos filtros</p>
+                <a href="{% url 'productos:catalogo' %}" class="btn btn-accent">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Ver todas las bicicletas
+                </a>
+                {% else %}
                 <i class="bi bi-bicycle display-1 text-muted mb-3"></i>
-                <h5>No se encontraron bicicletas</h5>
-                <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+                <h5 class="fw-bold">No hay bicicletas disponibles</h5>
+                <p class="text-muted">Pronto tendremos nuevos modelos en nuestro catálogo</p>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

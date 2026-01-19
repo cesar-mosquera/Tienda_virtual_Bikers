@@ -4,18 +4,19 @@
 
 {% block content %}
 <div class="container py-5">
+    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
             <li class="breadcrumb-item"><a href="{% url 'productos:catalogo' %}">Catálogo</a></li>
-            <li class="breadcrumb-item active">{{ bicicleta.modelo }}</li>
+            <li class="breadcrumb-item active">{{ bicicleta.marca }} {{ bicicleta.modelo }}</li>
         </ol>
     </nav>
 
     <div class="row g-5">
-        <!-- Image -->
+        <!-- Imagen Grande -->
         <div class="col-lg-6">
-            <div class="dashboard-card p-0 overflow-hidden">
+            <div class="dashboard-card p-0 overflow-hidden position-relative">
                 {% if bicicleta.imagen %}
                 <img src="{{ bicicleta.imagen.url }}" class="w-100" alt="{{ bicicleta.modelo }}"
                     style="object-fit: cover; max-height: 500px;">
@@ -24,59 +25,120 @@
                     <i class="bi bi-bicycle display-1 text-muted"></i>
                 </div>
                 {% endif %}
+
+                <!-- Badge de Agotado sobre la imagen -->
+                {% if bicicleta.stock == 0 %}
+                <div class="position-absolute top-0 end-0 m-3">
+                    <span class="badge bg-danger fs-5 px-3 py-2">
+                        <i class="bi bi-x-circle me-1"></i>AGOTADO
+                    </span>
+                </div>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Details -->
+        <!-- Información del Producto -->
         <div class="col-lg-6">
+            <!-- Badges de Gama y Tipo -->
             <div class="d-flex gap-2 mb-3">
-                <span class="badge badge-gama-{{ bicicleta.gama }}">{{ bicicleta.get_gama_display }}</span>
-                <span class="badge badge-{{ bicicleta.tipo }}">{{ bicicleta.get_tipo_display }}</span>
+                <span class="badge badge-gama-{{ bicicleta.gama }} fs-6">{{ bicicleta.get_gama_display }}</span>
+                <span class="badge badge-{{ bicicleta.tipo }} fs-6">{{ bicicleta.get_tipo_display }}</span>
             </div>
 
-            <h1 class="fw-bold">{{ bicicleta.marca }}</h1>
-            <h2 class="text-muted">{{ bicicleta.modelo }}</h2>
+            <!-- Marca y Modelo -->
+            <h1 class="fw-bold mb-0">{{ bicicleta.marca }}</h1>
+            <h2 class="text-muted mb-4">{{ bicicleta.modelo }}</h2>
 
             <hr>
 
+            <!-- Especificaciones -->
             <div class="row g-3 mb-4">
                 <div class="col-6">
                     <div class="dashboard-card text-center py-3">
+                        <i class="bi bi-rulers text-primary mb-2 fs-4"></i>
                         <small class="text-muted d-block">Medida Marco</small>
-                        <strong>{{ bicicleta.get_medida_marco_display }}</strong>
+                        <strong class="fs-5">{{ bicicleta.get_medida_marco_display }}</strong>
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="dashboard-card text-center py-3">
-                        <small class="text-muted d-block">Stock</small>
-                        <strong>{{ bicicleta.stock }} unidades</strong>
+                        <i class="bi bi-box-seam text-primary mb-2 fs-4"></i>
+                        <small class="text-muted d-block">Disponibilidad</small>
+                        {% if bicicleta.stock > 0 %}
+                        <strong class="fs-5 text-success">{{ bicicleta.stock }} en stock</strong>
+                        {% else %}
+                        <strong class="fs-5 text-danger">Agotado</strong>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
+            <!-- Descripción -->
             {% if bicicleta.descripcion %}
             <div class="mb-4">
-                <h5 class="fw-bold">Descripción</h5>
+                <h5 class="fw-bold">
+                    <i class="bi bi-info-circle me-2"></i>Descripción
+                </h5>
                 <p class="text-muted">{{ bicicleta.descripcion }}</p>
             </div>
             {% endif %}
 
+            <!-- Características adicionales -->
+            <div class="mb-4">
+                <h5 class="fw-bold">
+                    <i class="bi bi-list-check me-2"></i>Características
+                </h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong>Marca:</strong> {{ bicicleta.marca }}
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong>Modelo:</strong> {{ bicicleta.modelo }}
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong>Tipo:</strong> {{ bicicleta.get_tipo_display }}
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong>Gama:</strong> {{ bicicleta.get_gama_display }}
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong>Talla:</strong> {{ bicicleta.get_medida_marco_display }}
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Precio y Botón de Acción -->
             <div class="dashboard-card bg-dark text-white">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <div>
                         <small class="d-block opacity-75">Precio</small>
                         <span class="display-5 fw-bold">${{ bicicleta.precio|floatformat:0 }}</span>
                     </div>
-                    {% if bicicleta.disponible %}
-                    <a href="#" class="btn btn-accent btn-lg">
+
+                    {% if bicicleta.stock > 0 %}
+                    <!-- Botón visual (solo visual por ahora - Commit 2) -->
+                    <button type="button" class="btn btn-accent btn-lg">
                         <i class="bi bi-cart-plus me-2"></i>Agregar al Carrito
-                    </a>
+                    </button>
                     {% else %}
-                    <button class="btn btn-secondary btn-lg" disabled>
+                    <!-- Botón deshabilitado cuando no hay stock -->
+                    <button type="button" class="btn btn-secondary btn-lg" disabled>
                         <i class="bi bi-x-circle me-2"></i>Agotado
                     </button>
                     {% endif %}
                 </div>
+            </div>
+
+            <!-- Enlace para volver al catálogo -->
+            <div class="mt-4">
+                <a href="{% url 'productos:catalogo' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al Catálogo
+                </a>
             </div>
         </div>
     </div>
